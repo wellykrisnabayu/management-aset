@@ -38,6 +38,7 @@ const OrdersSearch = (props) => {
       <ToggleButtonGroup
         exclusive
         onChange={(event, value) => {
+          console.log(event)
           if (value) {
             onModeChange?.(value);
           }

@@ -18,7 +18,7 @@ export const routes = [
     children: [
       {
         index: true,
-        element: <ReportsPage />
+        element: <AuthStateHook><ReportsPage /></AuthStateHook>
       },
       {
         path: 'master',

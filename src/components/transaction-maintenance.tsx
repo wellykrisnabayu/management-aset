@@ -1,6 +1,6 @@
 import { FC, useContext, useEffect, useState } from "react";
 import { TransactionModel } from "../models/transactionModel";
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormHelperText, MenuItem, Select, Stack, TextField } from "@mui/material";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormHelperText, MenuItem, Stack, TextField } from "@mui/material";
 import * as Yup from 'yup';
 import { useFormik } from "formik";
 import { DesktopDatePicker } from "@mui/x-date-pickers";
@@ -14,7 +14,6 @@ import { COLLHISTORY, COLLMASTERDATA, COLLTRANSACTION, COLLTRANSACTIONKEY } from
 import { DBProvider } from "../App";
 import { LISTSTATUS } from "../variables/listStatus";
 import { MasterDataModel } from "../models/EnrolledModel";
-import firebase from "firebase/compat/app";
 import moment from "moment";
 
 export type MIANTENANCETRANSACTIONACTION = 'new' | 'update' | ''
@@ -200,6 +199,7 @@ const TransactionMaintenance: FC<TransactionMaintenanceProps> = ({ handleClose, 
     }
 
     async function closedHandle(event, reason) {
+        console.log(event)
         if (reason && reason === "backdropClick") return;
         handleClose()
     }

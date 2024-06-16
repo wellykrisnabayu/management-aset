@@ -113,7 +113,7 @@ const MaintenanceItem: FC<AddItemProps> = ({ open, handleClose, action, selected
                 pricePerMonth: String(data.pricePerMonth),
                 pricePerWeek: String(data.pricePerWeek)
             }
-            req[`${COLLTRANSACTION}/${data.enrolledKey}`] = {...defaultTransaction}
+            req[`${COLLTRANSACTION}/${data.enrolledKey}`] = { ...defaultTransaction }
             await update(ref(db.database), { ...req }).then(async () => {
                 await showMessage('success', 'Success', 'Success enrolled new data!')
                 setIsEnrolled('0')
@@ -239,6 +239,7 @@ const MaintenanceItem: FC<AddItemProps> = ({ open, handleClose, action, selected
     }
 
     async function closedHandle(event, reason) {
+        console.log(event)
         if (reason && reason === "backdropClick") return;
         await setIsEnrolled('0')
         handleClose()

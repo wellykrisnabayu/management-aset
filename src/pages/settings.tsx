@@ -56,6 +56,7 @@ const Page = () => {
     initialValues,
     validationSchema,
     onSubmit: async (values, helpers) => {
+      console.log(values)
       helpers.setStatus({ success: true });
       helpers.setSubmitting(false);
     }

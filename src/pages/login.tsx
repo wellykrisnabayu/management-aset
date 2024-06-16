@@ -2,12 +2,12 @@ import { Avatar, Box, Button, FormHelperText, TextField, Typography } from "@mui
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { useFormik } from "formik";
 import * as Yup from 'yup';
-import { FBService } from "../services/FBService";
 import { COLLUSER } from "../utils/GlobalVariable";
 import { showMessage } from "../utils/showMessage";
-import { UserModel } from "../models/userModel";
 import { useNavigate } from "react-router-dom";
-const db = new FBService()
+import { useContext } from "react";
+import { DBProvider } from "../App";
+import { get, ref } from "firebase/database";
 
 const initialValues = {
     username: '',
@@ -27,6 +27,7 @@ const validationSchema = Yup.object({
 });
 
 export default function LogInPage() {
+    const {db} = useContext(DBProvider)
     const navigate = useNavigate();
     const form = useFormik({
         initialValues,
@@ -37,13 +38,14 @@ export default function LogInPage() {
     });
 
     async function handleSubmit(username: string, password: string) {
-        db.GetData<UserModel>(`${COLLUSER}/${username}`).then((res) => {
-            if (res) {
-                if (password !== res.password) {
+        get(ref(db.database, `${COLLUSER}/${username}`)).then((res) => {
+            if (res.exists()) {
+                const data = res.val()
+                if (password !== data.password) {
                     showMessage('error', 'Error!', 'username and password dosnt match')
                 } else {
                     localStorage.setItem('can_access', '1')
-                    localStorage.setItem('access_role', res.role)
+                    localStorage.setItem('access_role', data.role)
                     localStorage.setItem('username', username)
                     return navigate("/");
                 }
@@ -66,7 +68,7 @@ export default function LogInPage() {
                     alignItems: 'center',
                 }}
             >
-                <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+                <Avatar sx={{ m: 1, bgcolor: 'secondary' }}>
                     <LockOutlinedIcon />
                 </Avatar>
                 <Typography component="h1" variant="h5">
