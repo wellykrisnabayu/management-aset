@@ -39,7 +39,8 @@
     "sweetalert2": "^11.11.1",
     "ts-transformer-keys": "^0.4.4",
     "uuid": "^10.0.0",
-    "yup": "1.0.0"
+    "yup": "1.0.0",
+    "react-number-format": "^5.4.0"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.6",

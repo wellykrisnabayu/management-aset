@@ -14,6 +14,8 @@ import { confirmMessage } from "../utils/confirmMessage";
 import { child, get, onValue, ref, update } from "firebase/database";
 import { DBProvider } from "../App";
 import { TransactionModel } from "../models/transactionModel";
+import { NumericFormat } from 'react-number-format';
+
 
 export type MAINTENANCEITEMACTION = 'add' | 'update' | '' | 'delete'
 
@@ -28,8 +30,8 @@ const initialValues = {
     enrolledKey: '',
     alatKesehatan: '',
     stock: 0,
-    pricePerWeek: 0,
-    pricePerMonth: 0,
+    pricePerWeek: '',
+    pricePerMonth: '',
     submit: null
 }
 
@@ -42,20 +44,20 @@ const validationSchema = Yup.object({
         .string()
         .max(255)
         .required('Alat Kesehatan is required'),
-    pricePerWeek: Yup
-        .number().integer().min(0, 'Price/ Week must be greater then zero')
-        .required('Stock is required'),
-    pricePerMonth: Yup
-        .number().integer().min(0, 'Price/ Month must be greater then zero')
-        .required('Stock is required')
+    // pricePerWeek: Yup
+    //     .number().min(0, 'Price/ Week must be greater then zero')
+    //     .required('Stock is required'),
+    // pricePerMonth: Yup
+    //     .number().min(0, 'Price/ Month must be greater then zero')
+    //     .required('Stock is required')
 });
 
 interface AddItemForm {
     enrolledKey: string
     alatKesehatan: string
     stock: number
-    pricePerWeek: number
-    pricePerMonth: number
+    pricePerWeek: string
+    pricePerMonth: string
 }
 
 
@@ -189,6 +191,7 @@ const MaintenanceItem: FC<AddItemProps> = ({ open, handleClose, action, selected
             const request: { [key: string]: any } = {}
             request[`${COLLMASTERDATA}/${data.enrolledKey}`] = null
             request[`${COLLMASTERDATA}/stock${oldData.alatKesehatan}`] = stock - 1 <= 0 ? null : stock - 1
+            request[`${COLLTRANSACTION}/${data.enrolledKey}`] = null
             await update(ref(db.database), { ...request }).then(async () => {
                 await showMessage('success', 'Success', 'Success deleted data!')
                 setIsEnrolled('0')
@@ -302,7 +305,7 @@ const MaintenanceItem: FC<AddItemProps> = ({ open, handleClose, action, selected
 
                             />
 
-                            <TextField
+                            {/* <TextField
                                 fullWidth
                                 label="Price/ Week"
                                 name="pricePerWeek"
@@ -312,8 +315,8 @@ const MaintenanceItem: FC<AddItemProps> = ({ open, handleClose, action, selected
                                 onBlur={form.handleBlur}
                                 onChange={form.handleChange}
                                 disabled={action === 'delete'}
-                            />
-                            <TextField
+                            /> */}
+                            {/* <TextField
                                 fullWidth
                                 label="Price/ Month"
                                 name="pricePerMonth"
@@ -323,7 +326,39 @@ const MaintenanceItem: FC<AddItemProps> = ({ open, handleClose, action, selected
                                 onBlur={form.handleBlur}
                                 onChange={form.handleChange}
                                 disabled={action === 'delete'}
+                            >
+                                <NumericFormat allowLeadingZeros={false} thousandSeparator="," />
+                            </TextField> */}
+                            <NumericFormat
+                                customInput={TextField}
+                                allowLeadingZeros={false}
+                                thousandSeparator=","
+                                // onValueChange={form.handleChange}
+                                label="Price/ Week"
+                                name="pricePerWeek"
+                                error={Boolean(form.touched.pricePerWeek && form.errors.pricePerWeek)}
+                                value={form.values.pricePerWeek}
+                                helperText={form.touched.pricePerWeek && form.errors.pricePerWeek}
+                                onBlur={form.handleBlur}
+                                onChange={form.handleChange}
+                                disabled={action === 'delete'}
                             />
+                            <NumericFormat
+                                customInput={TextField}
+                                allowLeadingZeros={false}
+                                thousandSeparator=","
+                                // onValueChange={form.handleChange}
+                                label="Price/ Month"
+                                name="pricePerMonth"
+                                error={Boolean(form.touched.pricePerMonth && form.errors.pricePerMonth)}
+                                value={form.values.pricePerMonth}
+                                helperText={form.touched.pricePerMonth && form.errors.pricePerMonth}
+                                onBlur={form.handleBlur}
+                                onChange={form.handleChange}
+                                disabled={action === 'delete'}
+                            />
+
+
                         </Stack>
                         {form.errors.submit && (
                             <FormHelperText
