@@ -4,13 +4,19 @@ import { Helmet } from "react-helmet-async";
 import { COLLMASTERDATA, FIELDALATKESEHATAN } from "../utils/GlobalVariable";
 import { MasterDataDetailModel } from "../models/EnrolledModel";
 import MaintenanceItem, { MAINTENANCEITEMACTION } from "../components/maintenance-item";
-import DeleteTwoToneIcon from '@mui/icons-material/DeleteTwoTone';
-import ModeEditOutlineTwoToneIcon from '@mui/icons-material/ModeEditOutlineTwoTone';
 import { onValue, ref } from "firebase/database";
 import { DBProvider } from "../App";
+import MasterDataRowExpanded from "../components/masterDataRowExpanded";
+
+export interface DataDetailForTableModel {
+    name: string
+    stock: number
+    detail: MasterDataDetailModel[]
+}
 const Enrolled: FC = () => {
     const { db } = useContext(DBProvider)
     const [dataTable, setDataTable] = useState<MasterDataDetailModel[]>([])
+    const [dataMapping, setDataMapping] = useState<DataDetailForTableModel[]>([])
     const [loading] = useState<boolean>(false)
     const [showDialogOpen, setShowDialogOpen] = useState<boolean>(false)
     const [selectedData, setSelectedData] = useState<MasterDataDetailModel | undefined>(undefined)
@@ -24,6 +30,7 @@ const Enrolled: FC = () => {
 
     async function fetchDataMaster() {
         const dbRef = ref(db.database, COLLMASTERDATA)
+        const tmpDatas: { [key: string]: MasterDataDetailModel[] } = {}
         onValue(dbRef, (snapshot) => {
             const data = snapshot.val()
             let details: MasterDataDetailModel[] = []
@@ -31,11 +38,24 @@ const Enrolled: FC = () => {
                 const keys = Object.keys(data)
                 for (const key of keys) {
                     if (!key.includes('stock')) {
-                        const tmpData = {...data[key], stock: String(data[`stock${data[key][FIELDALATKESEHATAN]}`] || '0')}
+                        const tmpData = { ...data[key], stock: String(data[`stock${data[key][FIELDALATKESEHATAN]}`] || '0') }
                         details = [...details, tmpData]
                     }
                 }
             }
+            for (const item of details) {
+                if (!tmpDatas[item.alatKesehatan]) {
+                    tmpDatas[item.alatKesehatan] = []
+                }
+                tmpDatas[item.alatKesehatan] = [...tmpDatas[item.alatKesehatan], item]
+            }
+            const keys = Object.keys(tmpDatas)
+            let realData: DataDetailForTableModel[] = []
+            for (const key of keys) {
+                const x: DataDetailForTableModel = { name: key, stock: tmpDatas[key].length, detail: tmpDatas[key] }
+                realData = [...realData, x]
+            }
+            setDataMapping(realData)
             setDataTable(details)
         }, () => {
             setDataTable([])
@@ -97,24 +117,32 @@ const Enrolled: FC = () => {
                                                 </Box>
                                             </div>
                                             <div>
-                                                <TableContainer component={Paper}>
+                                                <TableContainer component={Paper} >
                                                     <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
                                                         <TableHead>
                                                             <TableRow>
-                                                                <TableCell>No.</TableCell>
-                                                                <TableCell align="center">Enrolled Key</TableCell>
-                                                                <TableCell align="center">Alat Kesehatan</TableCell>
-                                                                <TableCell align="center">Stock</TableCell>
-                                                                <TableCell align="center">Harga/ Minggu</TableCell>
-                                                                <TableCell align="center">Harga/ Bulan</TableCell>
-                                                                {
-                                                                    localStorage.getItem('access_role') !== 'operator' && <TableCell align="center">Aksi</TableCell>
-                                                                }
-
+                                                                <TableCell></TableCell>
+                                                                <TableCell align="left">Alat Kesehatan</TableCell>
+                                                                <TableCell align="left">Stock</TableCell>
                                                             </TableRow>
                                                         </TableHead>
                                                         <TableBody>
-                                                            {dataTable.map((row, index) => (
+                                                            {
+                                                                dataMapping.map((row, index) => (
+                                                                    <MasterDataRowExpanded data={row} onUpdate={(data) => {
+                                                                        setAction('update')
+                                                                        setSelectedData(data)
+                                                                        setShowDialogOpen(true)
+                                                                    }} onDelete={
+                                                                        (data) => {
+                                                                            setAction('delete')
+                                                                            setSelectedData(data)
+                                                                            setShowDialogOpen(true)
+                                                                        }
+                                                                    } index={index} key={row.name} />
+                                                                ))
+                                                            }
+                                                            {/* {dataTable.map((row, index) => (
                                                                 <TableRow
                                                                     key={index}
                                                                     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
@@ -152,7 +180,7 @@ const Enrolled: FC = () => {
                                                                     }
 
                                                                 </TableRow>
-                                                            ))}
+                                                            ))} */}
                                                         </TableBody>
                                                     </Table>
                                                 </TableContainer>
@@ -169,7 +197,7 @@ const Enrolled: FC = () => {
                                 <CircularProgress color="inherit" />
                             </Backdrop>
                             <MaintenanceItem open={showDialogOpen} handleClose={handleCloseDialogAdd} action={action} selectedData={selectedData} />
-                            
+
                         </div>
                     </Stack>
                 </Container>

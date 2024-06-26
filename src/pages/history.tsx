@@ -9,7 +9,7 @@ import { DBProvider } from "../App";
 
 const HistoryPage: FC = () => {
 
-    const {db} = useContext(DBProvider)
+    const { db } = useContext(DBProvider)
     const [dataTable, setDataTable] = useState<HistoryModel[]>([])
     const [filteredDataTable, setFilteredData] = useState<HistoryModel[]>([])
     const [query] = useState<string>('')
@@ -112,6 +112,8 @@ const HistoryPage: FC = () => {
                                                                 <TableCell align="left">Phone Number</TableCell>
                                                                 <TableCell align="left">Order Date</TableCell>
                                                                 <TableCell align="left">Return Date</TableCell>
+                                                                <TableCell align="left">Price /Week</TableCell>
+                                                                <TableCell align="left">Price /Month</TableCell>
                                                                 <TableCell align="left">Status</TableCell>
                                                             </TableRow>
                                                         </TableHead>
@@ -130,6 +132,8 @@ const HistoryPage: FC = () => {
                                                                     <TableCell align="left">{row.phoneNumber}</TableCell>
                                                                     <TableCell align="left">{row.orderDate}</TableCell>
                                                                     <TableCell align="left">{row.returnDate}</TableCell>
+                                                                    <TableCell align="left">{Number(String(row?.pricePerWeek || '0').replace(/,/g, '')).toLocaleString()}</TableCell>
+                                                                    <TableCell align="left">{Number(String(row?.pricePerMonth || '0').replace(/,/g, '')).toLocaleString()}</TableCell>
                                                                     <TableCell align="left">
                                                                         <Chip
                                                                             color={row.status === 'DONE' ? 'primary' : 'secondary'}
@@ -140,7 +144,7 @@ const HistoryPage: FC = () => {
                                                                 </TableRow>
                                                             ))}
                                                         </TableBody>
-                                                        
+
                                                     </Table>
                                                 </TableContainer>
                                             </div>

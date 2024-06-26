@@ -49,6 +49,8 @@ const RowExpanded: FC<{
                                         <TableCell align="right">Phone Number</TableCell>
                                         <TableCell align="right">Order Date</TableCell>
                                         <TableCell align="right">Return Date</TableCell>
+                                        <TableCell align="right">Price /Week</TableCell>
+                                        <TableCell align="right">Price /Month</TableCell>
                                         <TableCell align="right">Address</TableCell>
                                     </TableRow>
                                 </TableHead>
@@ -61,6 +63,8 @@ const RowExpanded: FC<{
                                         <TableCell align="right">{props.data.phoneNumber}</TableCell>
                                         <TableCell align="right">{props.data.orderDate}</TableCell>
                                         <TableCell align="right">{props.data.returnDate}</TableCell>
+                                        <TableCell align="right">{props.data.pricePerWeek}</TableCell>
+                                        <TableCell align="right">{props.data.pricePerMonth}</TableCell>
                                         <TableCell align="right">{props.data.address}</TableCell>
                                     </TableRow>
                                 </TableBody>

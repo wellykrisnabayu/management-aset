@@ -81,13 +81,31 @@ const TransactionMaintenance: FC<TransactionMaintenanceProps> = ({ handleClose, 
         const allTransaction: TransactionModel[] = await get(child(ref(db.database), COLLHISTORY)).then(async (item) => {
             return item.val() || []
         })
+        const dataItem: MasterDataModel = await get(child(ref(db.database), `${COLLMASTERDATA}/${transctionKey}`)).then(async (item) => {
+            return item.val()
+        })
+        if (!dataItem) {
+            await showMessage('warning', 'RFID Not Found!', 'make sure your rfid already enrolled!')
+            handleClose()
+            return
+        }
         let status = ''
         if (statusField === 'PROCESS') {
             status = 'PROCESS'
         } else if (statusField === 'CANCEL' || statusField === 'DONE') {
             status = 'READY'
         }
-        request[`${COLLTRANSACTION}/${data.id}`] = { ...data, status: status, orderDate: orderDateValue?.format('DD/MM/YYYY'), returnDate: returnDateValue?.format('DD/MM/YYYY') }
+        const orderDate = moment(orderDateValue?.format('DD/MM/YYYY'), 'DD/MM/YYYY')
+        const returnDate = moment(returnDateValue?.format('DD/MM/YYYY'), 'DD/MM/YYYY')
+        const dif = returnDate.diff(orderDate, 'd')
+        const strPrcMonth = String(dataItem[data.id]?.pricePerMonth || 0).replace(/,/g, '')
+        const strPrcWeek = String(dataItem[data.id]?.pricePerWeek || 0).replace(/,/g, '')
+        let prcMountDay = strPrcMonth && !isNaN(Number(strPrcMonth)) && Number(strPrcMonth) > 0 ? Number(strPrcMonth) / 30 : 0
+        let prcWeekDay = strPrcWeek && !isNaN(Number(strPrcWeek)) && Number(strPrcWeek) > 0 ? Number(strPrcWeek) / 7 : 0
+        request[`${COLLTRANSACTION}/${data.id}`] = {
+            ...data, status: status, orderDate: orderDateValue?.format('DD/MM/YYYY'), returnDate: returnDateValue?.format('DD/MM/YYYY'), pricePerMonth: Number(prcMountDay * dif).toLocaleString(),
+            pricePerWeek: Number(prcWeekDay * dif).toLocaleString(),
+        }
         request[COLLHISTORY] = [...allTransaction, {
             id: data.id,
             itemName: data.itemName,
@@ -98,8 +116,8 @@ const TransactionMaintenance: FC<TransactionMaintenanceProps> = ({ handleClose, 
             returnDate: returnDateValue?.format('DD/MM/YYYY'),
             status: statusField,
             address: data.address,
-            pricePerMonth: data.pricePerMonth,
-            pricePerWeek: data.pricePerWeek,
+            pricePerMonth: Number(prcMountDay * dif).toLocaleString(),
+            pricePerWeek: Number(prcWeekDay * dif).toLocaleString(),
         }]
         await update(ref(db.database), { ...request }).then(async () => {
             await showMessage('success', 'Success!', 'Success update transaction!')
@@ -111,6 +129,18 @@ const TransactionMaintenance: FC<TransactionMaintenanceProps> = ({ handleClose, 
 
     }
     async function HanddleAddTransaction(data: TransactionModel) {
+        if (transctionKey === '') {
+            await showMessage('warning', 'Not Yet Scanned!', 'make sure your already scan your item!')
+            return
+        }
+        const dataItem: MasterDataModel = await get(child(ref(db.database), `${COLLMASTERDATA}/${data.id}`)).then(async (item) => {
+            return item.val()
+        })
+        if (!dataItem) {
+            await showMessage('warning', 'RFID Not Found!', 'make sure your rfid already enrolled!')
+            handleClose()
+            return
+        }
         const request: { [key: string]: any } = {}
         const countBorrow = await get(child(ref(db.database), `${COLLMASTERDATA}/${transctionKey}/borrowedCount`)).then(async (item) => {
             return Number(item.val() || '0')
@@ -118,8 +148,18 @@ const TransactionMaintenance: FC<TransactionMaintenanceProps> = ({ handleClose, 
         const allTransaction: TransactionModel[] = await get(child(ref(db.database), COLLHISTORY)).then(async (item) => {
             return item.val() || []
         })
+        const orderDate = moment(orderDateValue?.format('DD/MM/YYYY'), 'DD/MM/YYYY')
+        const returnDate = moment(returnDateValue?.format('DD/MM/YYYY'), 'DD/MM/YYYY')
+        const dif = returnDate.diff(orderDate, 'd')
+        const strPrcMonth = String(dataItem?.pricePerMonth || 0).replace(/,/g, '')
+        const strPrcWeek = String(dataItem?.pricePerWeek || 0).replace(/,/g, '')
+        let prcMountDay = strPrcMonth && !isNaN(Number(strPrcMonth)) && Number(strPrcMonth) > 0 ? Number(strPrcMonth) / 30 : 0
+        let prcWeekDay = strPrcWeek && !isNaN(Number(strPrcWeek)) && Number(strPrcWeek) > 0 ? Number(strPrcWeek) / 7 : 0
         request[`${COLLMASTERDATA}/${transctionKey}/borrowedCount`] = countBorrow + 1
-        request[`${COLLTRANSACTION}/${transctionKey}`] = { ...data, status: 'PROCESS', orderDate: orderDateValue?.format('DD/MM/YYYY'), returnDate: returnDateValue?.format('DD/MM/YYYY') }
+        request[`${COLLTRANSACTION}/${transctionKey}`] = {
+            ...data, status: 'PROCESS', orderDate: orderDateValue?.format('DD/MM/YYYY'), returnDate: returnDateValue?.format('DD/MM/YYYY'), pricePerMonth: Number(prcMountDay * dif).toLocaleString(),
+            pricePerWeek: Number(prcWeekDay * dif).toLocaleString(),
+        }
         request[COLLHISTORY] = [...allTransaction, {
             id: data.id,
             itemName: data.itemName,
@@ -130,8 +170,8 @@ const TransactionMaintenance: FC<TransactionMaintenanceProps> = ({ handleClose, 
             returnDate: returnDateValue?.format('DD/MM/YYYY'),
             status: 'PROCESS',
             address: data.address,
-            pricePerMonth: data.pricePerMonth,
-            pricePerWeek: data.pricePerWeek,
+            pricePerMonth: Number(prcMountDay * dif).toLocaleString(),
+            pricePerWeek: Number(prcWeekDay * dif).toLocaleString(),
         }]
         request[COLLTRANSACTIONKEY] = ''
         await update(ref(db.database), { ...request }).then(async () => {
@@ -225,7 +265,7 @@ const TransactionMaintenance: FC<TransactionMaintenanceProps> = ({ handleClose, 
     }, [open, action, data])
 
     useEffect(() => {
-        if (open && transctionKey !== '' && action === 'new') {
+        if (open && action === 'new' && transctionKey !== '') {
             fetchDetail()
         }
     }, [transctionKey])

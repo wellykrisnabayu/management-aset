@@ -13,4 +13,5 @@ export interface MasterDataDetailModel {
   pricePerMonth: string;
   pricePerWeek: string;
   stock: string;
+  borrowedCount: number
 }

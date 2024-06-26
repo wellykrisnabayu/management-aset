@@ -261,8 +261,8 @@ const MaintenanceItem: FC<AddItemProps> = ({ open, handleClose, action, selected
         } else if (open && (action === 'update' || action === 'delete') && selectedData) {
             form.setFieldValue('enrolledKey', selectedData?.enrolledKey)
             form.setFieldValue('alatKesehatan', selectedData?.alatKesehatan)
-            form.setFieldValue('pricePerWeek', Number(selectedData?.pricePerWeek))
-            form.setFieldValue('pricePerMonth', Number(selectedData?.pricePerMonth))
+            form.setFieldValue('pricePerWeek', String(selectedData?.pricePerWeek))
+            form.setFieldValue('pricePerMonth', String(selectedData?.pricePerMonth))
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open, action, selectedData])

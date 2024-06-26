@@ -7,4 +7,6 @@ export interface HistoryModel {
     orderDate: string
     returnDate: string
     status: string
+    pricePerMonth: string;
+    pricePerWeek: string;
 }
