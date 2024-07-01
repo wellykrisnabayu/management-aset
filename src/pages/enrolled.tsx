@@ -11,7 +11,7 @@ import MasterDataRowExpanded from "../components/masterDataRowExpanded";
 export interface DataDetailForTableModel {
     name: string
     stock: number
-    detail: MasterDataDetailModel[]
+    detail: MasterDataDetailModel[] 
 }
 const Enrolled: FC = () => {
     const { db } = useContext(DBProvider)
